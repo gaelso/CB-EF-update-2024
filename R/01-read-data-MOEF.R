@@ -16,7 +16,7 @@ path_moef <- list.files(file.path(path_conf, "data-MOEF"), full.names = T)  |>
 
 ## function to remove number first column and trailing empty columns from XLSX files if any
 rm_col <- function(tt){
-  if (!str_detect(str_to_lower(names(tt)[1]), "cluster")) { tt <- tt[-1] }
+  if (!str_detect(str_to_lower(names(tt)[1]), "cluster|cluter")) { tt <- tt[-1] }
   if (str_detect(names(tt)[ncol(tt)], "\\.\\.\\.")) { tt <- tt[-ncol(tt)] }
   tt
 }
@@ -67,7 +67,7 @@ cluster_init_moef
 
 plot_init_moef <- map(path_moef, function(x){
   tt <- readxl::read_xlsx(x, sheet = "F2 ", col_types = "text") |> rm_col()
-  print(names(tt))
+  #print(names(tt))
   
   ## Some templates have species scientific name for Reference Objects
   if (length(str_subset(names(tt), "Scientific")) == 0) {
@@ -186,8 +186,22 @@ plot_init_moef <- map(path_moef, function(x){
 
 luvs_init_moef <- map(path_moef, function(x){
   
-  tt <- readxl::read_xlsx(x, sheet = "F3", col_types = "text")
+  tt <- readxl::read_xlsx(x, sheet = "F3", col_types = "text") |>
+    rm_col() |>
+    mutate(lc_code = NA_character_) |>
+    select(
+      cluster_no = "1. Cluter Number",                                 
+      plot_no =  "2. Plot Number",                                   
+      luvs_no = "3. Section",
+      plot_share = "4. Share o Full polt Area (%)",                  
+      lc_code,
+      lc_description = "5. Land Cover Class"
+    ) |>
+    rename_with(.fn = ~ paste0("luvs_", .x)) |>
+    tidyr::fill(luvs_cluster_no, luvs_plot_no)
   
+  
+  tt
 }) |>
   list_rbind()
   
