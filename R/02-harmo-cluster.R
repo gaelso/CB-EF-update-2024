@@ -20,9 +20,9 @@ names(cluster_init)
 
 cluster_tmp1 <- cluster_init |>
   select(
-    no            = "1. Cluster number",
-    stratum       = "2. Stratum",
-    soil_sampling = "3. Soil & Litter sampling cluster",
+    cluster_no            = "1. Cluster number",
+    cluster_stratum       = "2. Stratum",
+    cluster_soil_sampling = "3. Soil & Litter sampling cluster",
     admin_province_code = "A. Admin. Area_4. Province code",
     admin_province_name = "4. Province name",
     admin_district_code = "5. District code",
