@@ -135,80 +135,80 @@ luvs_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F3", col_types = "tex
     luvsC_lc_code = "5_C land Cover class Code",
     luvsC_lc_description = "5_C land Cover class Description",
     luvsC_planting_year = "6_C Planting year (only if plantation) [yyyy/Unknown/Blank]",           
-    undergrowth_code = "B. Undergrowth, Land tenure and Management status_7. Under-growth Code",
+    undergrowth_code        = "B. Undergrowth, Land tenure and Management status_7. Under-growth Code",
     undergrowth_description = "7. Under-growth Description",                                           
-    ownership_code = "8. Ownership Code",
-    ownership_code = "8. Ownership Description",                                            
-    [23] "9. Management Status"                                                  
-    [24] "10. Presence of formal man. Plan"                                      
-    [25] "C. Environment and biodiversity_11. Disturbances Code"                 
-    [26] "11. Disturbances Description"                                          
-    [27] "12_1 Environmental problem Code"                                       
-    [28] "12_1 Environmental problem Description"                                
-    [29] "12_1 Environmental problem To be specified if 99Other"                 
-    [30] "13_1 Intensity Code"                                                   
-    [31] "13_1 Intensity Description"                                            
-    [32] "12_2 Environmental problem Code"                                       
-    [33] "12_2 Environmental problem Description"                                
-    [34] "12_2 Environmental problem To be specified if 99Other"                 
-    [35] "13_2 Intensity Code"                                                   
-    [36] "13_2 Intensity Description"                                            
-    [37] "12_3 Environmental problem Code"                                       
-    [38] "12_3 Environmental problem Description"                                
-    [39] "12_3 Environmental problem To be specified if 99Other"                 
-    [40] "13_3 Intensity Code"                                                   
-    [41] "13_3 Intensity Description"                                            
-    [42] "12_4 Environmental problem Code"                                       
-    [43] "12_4 Environmental problem Description"                                
-    [44] "12_4 Environmental problem To be specified if 99 Other"                
-    [45] "13_4 Intensity Code"                                                   
-    [46] "13_4 Intensity Description"                                            
-    [47] "14_1 Biodiversity Code"                                                
-    [48] "14_1 Biodiversity Description"                                         
-    [49] "15_1 Biodstatus Code"                                                  
-    [50] "15_1 Biodstatus Description"                                           
-    [51] "16_1 Specify biodiversity (notices on biodiversity)"                   
-    [52] "14_2 Biodiversity"                                                     
-    [53] "14_2 Biodiversity Description"                                         
-    [54] "15_2 Biodstatus Code"                                                  
-    [55] "15_2 Biodstatus Description"                                           
-    [56] "16_2 Specify biodiversity (notices on biodiversity)"                   
-    [57] "14_3 Biodiversity"                                                     
-    [58] "14_3 Biodiversity Description"                                         
-    [59] "15_3 Biodstatus Code"                                                  
-    [60] "15_3 Biodstatus Description"                                           
-    [61] "16_3 Specify biodiversity (notices on biodiversity)"                   
-    [62] "14_4 Biodiversity"                                                     
-    [63] "14_4 Biodiversity Description"                                         
-    [64] "15_4 Biodstatus Code"                                                  
-    [65] "15_4 Biodstatus Description"                                           
-    [66] "16_4 Specify biodiversity (notices on biodiversity)"                   
-    [67] "D. Forest and tree products/services_17_1 Product/Service Code"        
-    [68] "17_1 Product/Service Description"                                      
-    [69] "18_1 Ranking Code"                                                     
-    [70] "18_1 Ranking Desription"                                               
-    [71] "19_1 Remarks/Notice on Forest"                                         
-    [72] "17_2 Product/Service Code"                                             
-    [73] "17_2 Product/Service Description"                                      
-    [74] "18_2 Ranking Code"                                                     
-    [75] "18_2 Ranking Desription"                                               
-    [76] "19_2 Remarks/Notice on Forest"                                         
-    [77] "17_3 Product/Service Code"                                             
-    [78] "17_3 Product/Service Description"                                      
-    [79] "18_3 Ranking Code"                                                     
-    [80] "18_3 Ranking Desription"                                               
-    [81] "19_3 Remarks/Notice on Forest"                                         
-    [82] "17_4 Product/Service Code"                                             
-    [83] "17_4 Product/Service Description"                                      
-    [84] "18_4 Ranking Code"                                                     
-    [85] "18_4 Ranking Desription"                                               
-    [86] "19_4 Remarks/Notice on Forest"                                         
-    [87] "E. Canopy cover_Center"                                                
-    [88] "North"                                                                 
-    [89] "East"                                                                  
-    [90] "South"                                                                 
-    [91] "West"                                                                  
-    [92] "Average" 
+    ownership_code          = "8. Ownership Code",
+    ownership_description   = "8. Ownership Description",                                            
+    management_status       = "9. Management Status",
+    management_plan         = "10. Presence of formal man. Plan",                                        
+    disturbance_code = "C. Environment and biodiversity_11. Disturbances Code",
+    disturbance_description = "11. Disturbances Description",
+    envir_1_problem_code = "12_1 Environmental problem Code",
+    envir_1_problem_description = "12_1 Environmental problem Description",
+    envir_1_problem_detail = "12_1 Environmental problem To be specified if 99Other",
+    envir_1_intensity_code = "13_1 Intensity Code",
+    envir_1_intensity_description = "13_1 Intensity Description",
+    envir_2_problem_code = "12_2 Environmental problem Code",
+    envir_2_problem_description = "12_2 Environmental problem Description",
+    envir_2_problem_detail = "12_2 Environmental problem To be specified if 99Other",
+    envir_2_intensity_code = "13_2 Intensity Code",
+    envir_2_intensity_description = "13_2 Intensity Description",
+    envir_3_problem_code = "12_3 Environmental problem Code",
+    envir_3_problem_description = "12_3 Environmental problem Description",
+    envir_3_problem_detail = "12_3 Environmental problem To be specified if 99Other",
+    envir_3_intensity_code = "13_3 Intensity Code",
+    envir_3_intensity_description = "13_3 Intensity Description",                                            
+    envir_4_problem_code = "12_4 Environmental problem Code",
+    envir_4_problem_description = "12_4 Environmental problem Description",
+    envir_4_problem_detail = "12_4 Environmental problem To be specified if 99 Other",
+    envir_4_intensity_code = "13_4 Intensity Code",
+    envir_4_intensity_description = "13_4 Intensity Description",
+    biodiv_1_code               = "14_1 Biodiversity Code",
+    biodiv_1_description        = "14_1 Biodiversity Description",
+    biodiv_1_status_code        = "15_1 Biodstatus Code",
+    biodiv_1_status_description = "15_1 Biodstatus Description",
+    biodiv_1_remark             = "16_1 Specify biodiversity (notices on biodiversity)",
+    biodiv_2_code               = "14_2 Biodiversity",
+    biodiv_2_description        = "14_2 Biodiversity Description",
+    biodiv_2_status_code        = "15_2 Biodstatus Code",
+    biodiv_2_status_description = "15_2 Biodstatus Description",
+    biodiv_2_remark             = "16_2 Specify biodiversity (notices on biodiversity)",
+    biodiv_3_code               = "14_3 Biodiversity",
+    biodiv_3_description        = "14_3 Biodiversity Description",
+    biodiv_3_status_code        = "15_3 Biodstatus Code",
+    biodiv_3_status_description = "15_3 Biodstatus Description",
+    biodiv_3_remark             = "16_3 Specify biodiversity (notices on biodiversity)",
+    biodiv_4_code               = "14_4 Biodiversity",
+    biodiv_4_description        = "14_4 Biodiversity Description",
+    biodiv_4_status_code        = "15_4 Biodstatus Code",
+    biodiv_4_status_description = "15_4 Biodstatus Description",
+    biodiv_4_remark             = "16_4 Specify biodiversity (notices on biodiversity)",                  
+    product_1_code = "D. Forest and tree products/services_17_1 Product/Service Code",
+    product_1_description = "17_1 Product/Service Description",
+    product_1_ranking_code = "18_1 Ranking Code",                                                     
+    product_1_ranking_description = "18_1 Ranking Desription",                                               
+    product_1_remark = "19_1 Remarks/Notice on Forest",
+    product_2_code = "17_2 Product/Service Code",
+    product_2_description = "17_2 Product/Service Description",
+    product_2_ranking_code = "18_2 Ranking Code",                                                     
+    product_2_ranking_description = "18_2 Ranking Desription",                                               
+    product_2_remark = "19_2 Remarks/Notice on Forest",
+    product_3_code = "17_3 Product/Service Code",
+    product_3_description = "17_3 Product/Service Description",
+    product_3_ranking_code = "18_3 Ranking Code",                                                     
+    product_3_ranking_description = "18_3 Ranking Desription",                                               
+    product_3_remark = "19_3 Remarks/Notice on Forest",
+    product_4_code = "17_4 Product/Service Code",
+    product_4_description = "17_4 Product/Service Description",
+    product_4_ranking_code = "18_4 Ranking Code",                                                     
+    product_4_ranking_description = "18_4 Ranking Desription",                                               
+    product_4_remark = "19_4 Remarks/Notice on Forest",     
+    cc_center = "E. Canopy cover_Center",                                               
+    cc_north = "North",                                                             
+    cc_east = "East",                                                               
+    cc_south = "South",
+    cc_west = "West",
+    cc_mean = "Average" 
   )
 
 tree_init_rua    <- map(path_rua, readxl::read_xlsx, sheet = "F5_Circular", col_types = "text") |> list_rbind()

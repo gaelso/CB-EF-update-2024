@@ -59,6 +59,12 @@ cluster_init_moef <- map(path_moef, function(x){
 cluster_init_moef
 
 
+
+
+##
+## Load plot data ######
+##
+
 plot_init_moef <- map(path_moef, function(x){
   tt <- readxl::read_xlsx(x, sheet = "F2 ", col_types = "text") |> rm_col()
   print(names(tt))
@@ -172,7 +178,22 @@ plot_init_moef <- map(path_moef, function(x){
     plot_RO3_dbh
   )
 
-luvs_init_moef    <- map(path_moef, readxl::read_xlsx, sheet = "F3", col_types = "text") |> list_rbind()
+
+
+##
+## Load LUVS data ######
+##
+
+luvs_init_moef <- map(path_moef, function(x){
+  
+  tt <- readxl::read_xlsx(x, sheet = "F3", col_types = "text")
+  
+}) |>
+  list_rbind()
+  
+
+
+
 tree_init_moef    <- map(path_moef, readxl::read_xlsx, sheet = "F5 ", col_types = "text") |> list_rbind()
 
 
