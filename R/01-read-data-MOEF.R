@@ -34,7 +34,7 @@ rm_col <- function(tt){
 cluster_init_moef <- map(path_moef, function(x){
   tt <- readxl::read_xlsx(x, sheet = "F1 ", col_types = "text") |> rm_col()
   names(tt) <- c(
-    "cluster_no",
+    "cluster_cluster_no",
     "cluster_stratum",
     "cluster_soil_sampling",          
     "cluster_admin_province_name",
@@ -185,8 +185,7 @@ plot_init_moef <- map(path_moef, function(x){
 ##
 
 luvs_init_moef <- map(path_moef, function(x){
-  
-  tt <- readxl::read_xlsx(x, sheet = "F3", col_types = "text") |>
+  readxl::read_xlsx(x, sheet = "F3", col_types = "text") |>
     rm_col() |>
     mutate(lc_code = NA_character_) |>
     select(
@@ -199,22 +198,45 @@ luvs_init_moef <- map(path_moef, function(x){
     ) |>
     rename_with(.fn = ~ paste0("luvs_", .x)) |>
     tidyr::fill(luvs_cluster_no, luvs_plot_no)
-  
-  
-  tt
 }) |>
   list_rbind()
-  
+luvs_init_moef
 
 
 
-tree_init_moef    <- map(path_moef, readxl::read_xlsx, sheet = "F5 ", col_types = "text") |> list_rbind()
+##
+## Load tree data ######
+##
+
+tree_init_moef <- map(path_moef, function(x){
+  tt <- readxl::read_xlsx(x, sheet = "F5 ", col_types = "text") |>
+    rm_col()
+  names(tt) <- c(
+    "tree_cluster_no",
+    "tree_plot_no",
+    "tree_luvs_no",
+    "tree_tree_no",
+    "tree_species_scientific_name",
+    "tree_species_code",
+    "tree_species_vernacular_name",
+    "tree_distance",
+    "tree_azimuth",
+    "tree_dbh",
+    "tree_pom",
+    "tree_bole_height",
+    "tree_health_code",
+    "tree_quality_code",
+    "tree_origin_code",
+    "tree_top_height",
+    "tree_stump_diam",
+    "tree_stump_height"     
+  )
+  tt
+}) |> 
+  list_rbind() |>
+  tidyr::fill(tree_cluster_no, tree_plot_no, tree_luvs_no)
+tree_init_moef
 
 
-
-
-rs_envir_stress <- terra::rast(file.path(path_src, "E.nc"))
-
-sf_cb <- st_read(file.path(path_src, "gadm41_KHM_0.json"))
 
 

@@ -1,8 +1,11 @@
 
-
+if (!("path_src" %in% ls())) source("R/00-setup.R", local = TRUE)
+if (!("cluster_init_rua" %in% ls())) source("R/01-read-data-RUA.R", local = TRUE)
+if (!("cluster_init_moef" %in% ls())) source("R/01-read-data-MOEF.R", local = TRUE)
+if (!("species_list" %in% ls())) source("R/01-read-data-ancillary.R", local = TRUE)
 
 ## Steps:
-## 1. rename columns 
+## 1. merge data
 ## 2. Correct data type
 ## 3. Correct typos
 ## 4. Add calculated variables (total collection time)
@@ -12,59 +15,19 @@
 ## 3. Correct admin names with code lists.
 
 
+
 ## 
-## Rename columns ####
+## Merge data ######
 ##
+
+cluster_init <- bind_rows(cluster_init_rua, cluster_init_moef)
 
 names(cluster_init)
 
-cluster_tmp1 <- cluster_init |>
-  select(
-    cluster_no            = "1. Cluster number",
-    cluster_stratum       = "2. Stratum",
-    cluster_soil_sampling = "3. Soil & Litter sampling cluster",
-    admin_province_code = "A. Admin. Area_4. Province code",
-    admin_province_name = "4. Province name",
-    admin_district_code = "5. District code",
-    admin_district_name = "5. District name",
-    admin_commune_code  = "6. Commune code",
-    admin_commune_name  = "6. Commune name",
-    admin_village_code  = "7. Village code",
-    admin_village_name  = "7. Village name",
-    organization_organization       = "B. Orgnization and Crew list_8. Organization",
-    organization_team_leader        = "9. Name TL",
-    organization_team_leader_phone  = "9. Phone TL",
-    organization_TL_assistant       =  "9. Name Assistant TL",
-    organization_TL_assistant_phone =  "9. Phone Assistant TL",
-    equipment_GPS_model = "C. Equipment Used_10. GPS (Brand name, type)",
-    equipment_GPS_id    = "11. GPS unit ID",
-    cluster_access_access_code         = "D. Cluster Access_12. Accessibility code" ,
-    cluster_access_access_desc         = "12. Accessibility Description",
-    cluster_access_starting_point_utmx =  "Starting position coodinates (leaving vehicle or camp)_13. UTM E (x)",
-    cluster_access_starting_point_utmy = "14. UTM N (y)",
-    cluster_access_day1_date_dmy       = "Day 1._15. Date [dd/mm/yy]",
-    cluster_access_day1_time_start     = "16. Start time",
-    cluster_access_day1_time_stop      = "17. Time of return",                                                
-    cluster_access_day2_date_dmy       = "Day 2._18. Date [dd/mm/yy]",
-    cluster_access_day2_time_start     = "19. Start time",
-    cluster_access_day2_time_stop      = "20. Time of return",
-    cluster_access_remarks             = "21. Remarks",
-    data_control_delivered_by        = "E. Follow up raw data_Raw data delivered by 8name)",
-    data_control_delivered_to        = "Raw data delivered to (name)",
-    data_control_delivered_date_dmy  = "Raw data delivered on date [dd/mm/yy]",
-    data_control_controlled_by       = "F. Follow up raw data_Data controlled by name",
-    data_control_controlled_date_dmy = "Data controlled Date" ,
-    data_control_entered_by          = "Data entered by name",
-    data_control_entered_date_dmy    = "Data entered Date",
-    data_control_validated_by        = "Data validated by name",
-    data_control_validated_date_dmy = "Data validated Date"                                                 
-  ) |>
-  rename_with(.fn = ~ paste0("cluster_", .x)) 
-
 
 
 ## 
-## Correct data type ####
+## Correct data type ######
 ##
 
 ## EXCEL STORE TIME AS DECIMAL WHEN LOADED AS TEXT.
@@ -75,11 +38,14 @@ conv_time <- function(x){
   lubridate::hm(paste0(h, ":", m))
 }
 
-## Checks
-summary(cluster_tmp1)
+as.Date("44906", origin = "1899-12-30")
+lubridate::as_date(44906, origin = "1899-12-30") ## Convert integers from Excel to date.
+lubridate::as_date(as.integer("44906"), origin = "1899-12-30")
+
+if_else(is.na(as.integer("44906")), lubridate::dmy("44906"), lubridate::as_date(as.integer("44906"), origin = "1899-12-30"))
 
 ## Correct
-cluster_tmp2 <- cluster_tmp1 |>
+cluster_tmp1 <- cluster_init |>
   mutate(
     ## Numeric
     across(c(
@@ -91,7 +57,7 @@ cluster_tmp2 <- cluster_tmp1 |>
       cluster_cluster_access_day1_date_dmy, cluster_cluster_access_day2_date_dmy, 
       cluster_data_control_delivered_date_dmy, cluster_data_control_controlled_date_dmy, 
       cluster_data_control_entered_date_dmy, cluster_data_control_validated_date_dmy
-    ), lubridate::dmy),
+    ), ~ if_else(is.na(as.integer(.)), lubridate::dmy(.), lubridate::as_date(as.integer(.), origin = "1899-12-30"))),
     ## Time
     across(c(
       cluster_cluster_access_day1_time_start, cluster_cluster_access_day1_time_stop,
@@ -100,7 +66,7 @@ cluster_tmp2 <- cluster_tmp1 |>
   )
 
 ## Check
-summary(cluster_tmp2)
+summary(cluster_tmp1)
 
 
 

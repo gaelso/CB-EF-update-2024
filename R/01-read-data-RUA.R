@@ -18,8 +18,8 @@ cluster_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F1", col_types = "
   list_rbind() |>
   select(
     cluster_no            = "1. Cluster number",
-    cluster_stratum       = "2. Stratum",
-    cluster_soil_sampling = "3. Soil & Litter sampling cluster",
+    stratum       = "2. Stratum",
+    soil_sampling = "3. Soil & Litter sampling cluster",
     admin_province_code = "A. Admin. Area_4. Province code",
     admin_province_name = "4. Province name",
     admin_district_code = "5. District code",
@@ -134,7 +134,8 @@ luvs_prelim_rua <- map(path_rua, readxl::read_xlsx, sheet = "F3", col_types = "t
     luvsC_plot_share = "4_C Share of full plot area [%]",
     luvsC_lc_code = "5_C land Cover class Code",
     luvsC_lc_description = "5_C land Cover class Description",
-    luvsC_planting_year = "6_C Planting year (only if plantation) [yyyy/Unknown/Blank]",           
+    luvsC_planting_year = "6_C Planting year (only if plantation) [yyyy/Unknown/Blank]",
+    ## GS: Commented out other variables as not harmonised with 
     # undergrowth_code        = "B. Undergrowth, Land tenure and Management status_7. Under-growth Code",
     # undergrowth_description = "7. Under-growth Description",                                           
     # ownership_code          = "8. Ownership Code",
@@ -225,7 +226,40 @@ luvs_init_rua <- luvs_prelim_rua |>
   rename_with(.fn = ~ paste0("luvs_", .x), .cols = !starts_with("luvs_"))
 luvs_init_rua
 
+rm(luvs_prelim_rua)
+
+##
+## Load tree data ######
+##
+
+tree_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F5_Circular", col_types = "text") |>
+  list_rbind() |>
+  select(
+    cluster_no = "1. Cluster Number",
+    plot_no = "2. Plot Number",
+    TOREMOVE_clusterplot = "ClusterPlot",
+    luvs_no = "3. LUVS section [code]",
+    tree_no = "4. Tree No.",
+    species_code = "5. Species code",
+    species_scientific_name = "6. Species name",
+    distance = "7. Distance [m]",
+    azimuth = "8. Bearing [deg]",
+    dbh = "9. DBH [cm]",
+    pom = "10. Height of DBH (if not 1.3m) [m]",
+    bole_height = "11. Bole heigh [m]",
+    health_code = "12. Health Code",
+    health_description = "12. Health Description",
+    quality_code = "13. Quality Code",
+    quality_description = "13. Quality Description",
+    origin_code = "14. Origing Code",
+    origin_description = "14. Origing Description",
+    top_height = "15. Top Height [m]",
+    stump_diam = "16. Stump diam [cm]",
+    stump_height = "17. Stump level height [cm]",
+    wood_density = "WD",
+    forest_type = "Forest Types"              
+  ) |>
+  rename_with(.fn = ~ paste0("tree_", .x))
+tree_init_rua
 
 
-
-tree_init_rua    <- map(path_rua, readxl::read_xlsx, sheet = "F5_Circular", col_types = "text") |> list_rbind()
