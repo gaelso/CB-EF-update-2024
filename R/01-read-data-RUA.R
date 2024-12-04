@@ -1,10 +1,6 @@
-## Source preliminary scripts if needed
-if (!("path_src" %in% ls())) source("R/00-setup.R", local = TRUE)
 
 
 ## GS: RUA and MOEF Data treated separately as template differ.
-
-
 path_rua <- list.files(file.path(path_conf, "data-RUA"), full.names = T) |>
   str_subset("\\~\\$", negate = TRUE)
 
@@ -14,9 +10,18 @@ path_rua <- list.files(file.path(path_conf, "data-RUA"), full.names = T) |>
 ## Load cluster data ######
 ##
 
-cluster_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F1", col_types = "text") |> 
+cluster_init_rua <- map(path_rua, function(x){
+  
+  file_name <- str_remove(x, pattern = ".*/")
+  
+  tt <- readxl::read_xlsx(x, sheet = "F1", col_types = "text", na = "NA")
+  tt |> 
+    mutate(filename = file_name)
+
+}) |> 
   list_rbind() |>
   select(
+    filename,
     cluster_no            = "1. Cluster number",
     stratum       = "2. Stratum",
     soil_sampling = "3. Soil & Litter sampling cluster",
@@ -35,26 +40,28 @@ cluster_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F1", col_types = "
     organization_TL_assistant_phone =  "9. Phone Assistant TL",
     equipment_GPS_model = "C. Equipment Used_10. GPS (Brand name, type)",
     equipment_GPS_id    = "11. GPS unit ID",
-    cluster_access_access_code         = "D. Cluster Access_12. Accessibility code" ,
-    cluster_access_access_desc         = "12. Accessibility Description",
-    cluster_access_starting_point_utmx =  "Starting position coodinates (leaving vehicle or camp)_13. UTM E (x)",
-    cluster_access_starting_point_utmy = "14. UTM N (y)",
-    cluster_access_day1_date_dmy       = "Day 1._15. Date [dd/mm/yy]",
-    cluster_access_day1_time_start     = "16. Start time",
-    cluster_access_day1_time_stop      = "17. Time of return",                                                
-    cluster_access_day2_date_dmy       = "Day 2._18. Date [dd/mm/yy]",
-    cluster_access_day2_time_start     = "19. Start time",
-    cluster_access_day2_time_stop      = "20. Time of return",
-    cluster_access_remarks             = "21. Remarks",
-    data_control_delivered_by        = "E. Follow up raw data_Raw data delivered by 8name)",
-    data_control_delivered_to        = "Raw data delivered to (name)",
-    data_control_delivered_date_dmy  = "Raw data delivered on date [dd/mm/yy]",
-    data_control_controlled_by       = "F. Follow up raw data_Data controlled by name",
-    data_control_controlled_date_dmy = "Data controlled Date" ,
-    data_control_entered_by          = "Data entered by name",
-    data_control_entered_date_dmy    = "Data entered Date",
-    data_control_validated_by        = "Data validated by name",
-    data_control_validated_date_dmy = "Data validated Date"                                                 
+    access_access_code         = "D. Cluster Access_12. Accessibility code" ,
+    access_access_desc         = "12. Accessibility Description",
+    access_starting_point_utmx =  "Starting position coodinates (leaving vehicle or camp)_13. UTM E (x)",
+    access_starting_point_utmy = "14. UTM N (y)",
+    access_day1_date_dmy       = "Day 1._15. Date [dd/mm/yy]",
+    access_day1_time_start     = "16. Start time",
+    access_day1_time_stop      = "17. Time of return",                                                
+    access_day2_date_dmy       = "Day 2._18. Date [dd/mm/yy]",
+    access_day2_time_start     = "19. Start time",
+    access_day2_time_stop      = "20. Time of return",
+    access_remarks             = "21. Remarks",
+    
+    ##GS: CURRENTLY NOT HARMONIZED with MOEF
+    # data_control_delivered_by        = "E. Follow up raw data_Raw data delivered by 8name)",
+    # data_control_delivered_to        = "Raw data delivered to (name)",
+    # data_control_delivered_date_dmy  = "Raw data delivered on date [dd/mm/yy]",
+    # data_control_controlled_by       = "F. Follow up raw data_Data controlled by name",
+    # data_control_controlled_date_dmy = "Data controlled Date" ,
+    # data_control_entered_by          = "Data entered by name",
+    # data_control_entered_date_dmy    = "Data entered Date",
+    # data_control_validated_by        = "Data validated by name",
+    # data_control_validated_date_dmy = "Data validated Date"                                                 
   ) |>
   rename_with(.fn = ~ paste0("cluster_", .x)) 
 
@@ -80,33 +87,38 @@ plot_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F2-UW-C", col_types =
     GPS_at_startpoint          = "8. GPS Point at Plot starting point?",
     GPS_to_startpoint_distance = "9. Distance from GPS Point to Plot starting point [m]",
     GPS_to_startpoint_azimuth  = "10. Bearing from GPS Point to Plot starting point [deg]",
-    accessibility_code        =  "C.Plot accessibility, slope and phot_11. Accessibility Code",
-    accessibility_description = "11. Accessibility Description",                             
-    plot_slope = "12. Slope (at the center of plot) [%]",
-    plot_slope_azimuth =  "13. Slope bearing [deg]",
-    plot_photo_upwards = "14_Up Photo no./ID",
-    plot_photo_N = "14_N Photo no./ID",
-    plot_photo_E = "14_E Photo no./ID",
-    plot_photo_S = "14_S Photo no./ID",
-    plot_photo_W = "14_W Photo no./ID",
-    plot_remarks = "15. Remarks",
-    plot_RO1_type = "D. Reference object data_16_R1 Reference Type of object",
-    plot_RO1_distance = "17_R1 Reference_Distance [m]",
-    plot_RO1_azimuth = "18_R1 Reference_Bearing [deg]",
-    plot_RO1_dbh = "19_R1 Reference_DBH [cm]",
-    plot_RO1_remarks = "20_R1 Reference_Remarks",
-    plot_RO2_type = "16_R2 Reference Type of object",
-    plot_RO2_distance = "17_R2 Reference_Distance [m]",
-    plot_RO2_azimuth = "18_R2 Reference_Bearing [deg]",
-    plot_RO2_dbh = "19_R2 Reference_DBH [cm]",
-    plot_RO2_remarks = "20_R2 Reference_Remarks",
-    plot_RO3_type = "16_R3 Reference Type of object",                            
-    plot_RO3_distance = "17_R3 Reference_Distance [m]",
-    plot_RO3_azimuth = "18_R3 Reference_Bearing [deg]",
-    plot_RO3_dbh = "19_R3 Reference_DBH [cm]",
-    plot_RO3_remarks = "20_R3 Reference_Remarks" 
+    access_code        =  "C.Plot accessibility, slope and phot_11. Accessibility Code",
+    access_description = "11. Accessibility Description",                             
+    slope = "12. Slope (at the center of plot) [%]",
+    slope_azimuth =  "13. Slope bearing [deg]",
+    photo_upwards = "14_Up Photo no./ID",
+    photo_N = "14_N Photo no./ID",
+    photo_E = "14_E Photo no./ID",
+    photo_S = "14_S Photo no./ID",
+    photo_W = "14_W Photo no./ID",
+    remarks = "15. Remarks",
+    RO1_type = "D. Reference object data_16_R1 Reference Type of object",
+    RO1_distance = "17_R1 Reference_Distance [m]",
+    RO1_azimuth = "18_R1 Reference_Bearing [deg]",
+    RO1_dbh = "19_R1 Reference_DBH [cm]",
+    RO1_remarks = "20_R1 Reference_Remarks",
+    RO2_type = "16_R2 Reference Type of object",
+    RO2_distance = "17_R2 Reference_Distance [m]",
+    RO2_azimuth = "18_R2 Reference_Bearing [deg]",
+    RO2_dbh = "19_R2 Reference_DBH [cm]",
+    RO2_remarks = "20_R2 Reference_Remarks",
+    RO3_type = "16_R3 Reference Type of object",                            
+    RO3_distance = "17_R3 Reference_Distance [m]",
+    RO3_azimuth = "18_R3 Reference_Bearing [deg]",
+    RO3_dbh = "19_R3 Reference_DBH [cm]",
+    RO3_remarks = "20_R3 Reference_Remarks" 
   ) |>
-  rename_with(.fn = ~ paste0("plot_", .x))
+  rename_with(.fn = ~ paste0("plot_", .x)) |>
+  mutate(
+    plot_org = "RUA",
+    plot_filename = path_rua,
+  ) |>
+  select(plot_org, plot_filename, everything())
 
 
 
@@ -211,7 +223,12 @@ luvs_prelim_rua <- map(path_rua, readxl::read_xlsx, sheet = "F3", col_types = "t
     # cc_west = "West",
     # cc_mean = "Average" 
   ) |>
-  rename_with(.fn = ~ paste0("luvs_", .x))
+  rename_with(.fn = ~ paste0("luvs_", .x)) |>
+  mutate(
+    luvs_org = "RUA",
+    luvs_filename = path_rua,
+  ) |>
+  select(luvs_org, luvs_filename, everything())
 luvs_prelim_rua
 
 luvs_init_rua <- luvs_prelim_rua |> 
@@ -259,7 +276,12 @@ tree_init_rua <- map(path_rua, readxl::read_xlsx, sheet = "F5_Circular", col_typ
     wood_density = "WD",
     forest_type = "Forest Types"              
   ) |>
-  rename_with(.fn = ~ paste0("tree_", .x))
+  rename_with(.fn = ~ paste0("tree_", .x)) |>
+  mutate(
+    tree_org = "RUA",
+    tree_filename = path_rua,
+  ) |>
+  select(tree_org, tree_filename, everything())
 tree_init_rua
 
 

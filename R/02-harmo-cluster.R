@@ -1,9 +1,4 @@
 
-if (!("path_src" %in% ls())) source("R/00-setup.R", local = TRUE)
-if (!("cluster_init_rua" %in% ls())) source("R/01-read-data-RUA.R", local = TRUE)
-if (!("cluster_init_moef" %in% ls())) source("R/01-read-data-MOEF.R", local = TRUE)
-if (!("species_list" %in% ls())) source("R/01-read-data-ancillary.R", local = TRUE)
-
 ## Steps:
 ## 1. merge data
 ## 2. Correct data type
@@ -21,7 +16,6 @@ if (!("species_list" %in% ls())) source("R/01-read-data-ancillary.R", local = TR
 ##
 
 cluster_init <- bind_rows(cluster_init_rua, cluster_init_moef)
-
 names(cluster_init)
 
 
@@ -30,79 +24,163 @@ names(cluster_init)
 ## Correct data type ######
 ##
 
-## EXCEL STORE TIME AS DECIMAL WHEN LOADED AS TEXT.
-conv_time <- function(x){
-  t = as.numeric(x) * 24
-  h = round(t)
-  m = round((t - h) * 60)
-  lubridate::hm(paste0(h, ":", m))
-}
-
-as.Date("44906", origin = "1899-12-30")
-lubridate::as_date(44906, origin = "1899-12-30") ## Convert integers from Excel to date.
-lubridate::as_date(as.integer("44906"), origin = "1899-12-30")
-
-if_else(is.na(as.integer("44906")), lubridate::dmy("44906"), lubridate::as_date(as.integer("44906"), origin = "1899-12-30"))
 
 ## Correct
-cluster_tmp1 <- cluster_init |>
+cluster_tmp <- cluster_init |>
   mutate(
     ## Numeric
+    # across(c( 
+    #   cluster_admin_province_code, cluster_admin_district_code, cluster_admin_commune_code, 
+    #   cluster_admin_village_code, cluster_access_starting_point_utmx, cluster_access_starting_point_utmy
+    # ), as.numeric),
+    ## admin codes should remain as text
     across(c(
-      cluster_admin_province_code, cluster_admin_district_code, cluster_admin_commune_code, 
-      cluster_admin_village_code, cluster_cluster_access_starting_point_utmx, cluster_cluster_access_starting_point_utmy
+      cluster_access_starting_point_utmx, cluster_access_starting_point_utmy
     ), as.numeric),
     ## Dates
     across(c(
-      cluster_cluster_access_day1_date_dmy, cluster_cluster_access_day2_date_dmy, 
-      cluster_data_control_delivered_date_dmy, cluster_data_control_controlled_date_dmy, 
-      cluster_data_control_entered_date_dmy, cluster_data_control_validated_date_dmy
-    ), ~ if_else(is.na(as.integer(.)), lubridate::dmy(.), lubridate::as_date(as.integer(.), origin = "1899-12-30"))),
+      cluster_access_day1_date_dmy, cluster_access_day2_date_dmy
+    ), ~if_else(is.na(as.integer(.)), lubridate::dmy(.), lubridate::as_date(as.integer(.), origin = "1899-12-30"))),
     ## Time
     across(c(
-      cluster_cluster_access_day1_time_start, cluster_cluster_access_day1_time_stop,
-      cluster_cluster_access_day2_time_start, cluster_cluster_access_day2_time_stop
-    ), conv_time)
-  )
-
-## Check
-summary(cluster_tmp1)
+      cluster_access_day1_time_start, cluster_access_day1_time_stop,
+      cluster_access_day2_time_start, cluster_access_day2_time_stop
+    ), conv_time),
+    ## Character
+    across(where(is.character), ~if_else(. == "NA", NA_character_, .))
+  ) |>
+  mutate(
+    across(c(
+      cluster_organization_team_leader, cluster_organization_TL_assistant
+    ), str_to_title)
+  ) |>
+  arrange(cluster_filename, cluster_cluster_no)
 
 
 
 ##
-## Correct typos ####
+## Important Checks
 ##
+
+## Important info from cluster is admin location, stratum and access
+summary(cluster_tmp)
+
+cluster_tmp |> filter(is.na(cluster_admin_province_name)) |> select(cluster_filename, cluster_cluster_no)
+cluster_tmp |> filter(is.na(cluster_admin_district_name)) |> select(cluster_filename, cluster_cluster_no)
+cluster_tmp |> filter(is.na(cluster_admin_commune_name)) |> select(cluster_filename, cluster_cluster_no)
+cluster_tmp |> filter(is.na(cluster_admin_village_name)) |> select(cluster_filename, cluster_cluster_no)
+unique(cluster_tmp$cluster_admin_province_name)
+
+cluster_tmp |> filter(is.na(cluster_stratum)) |> select(cluster_filename, cluster_cluster_no)
+unique(cluster_tmp$cluster_stratum)
+
+cluster_tmp |> filter(is.na(cluster_access_access_code)) |> select(cluster_filename, cluster_cluster_no)
+table(cluster_tmp$cluster_access_access_code, useNA = "ifany")
+table(cluster_tmp$cluster_access_access_desc, useNA = "ifany")
+
+
+## GS: Missing admin codes, names not harmonized, can be solved manually with admin table from OF Collect.
+
+
+
+##
+## Correct admin ####
+##
+
+## !!! 
+## This code may not work if admin codes are entered as number and province_code is less than 10
+## In this case need to check the admin code for NFI data.
+## !!!
+
+cluster_tmp1 <- cluster_tmp |> 
+  filter(!is.na(cluster_admin_commune_code)) |>
+  rename(commune_code = cluster_admin_commune_code) |>
+  select(-starts_with("cluster_admin")) |>
+  left_join(admin_unit, by = join_by(commune_code))
+
+cluster_tmp2 <- cluster_tmp |>
+  filter(is.na(cluster_admin_commune_code), !is.na(cluster_admin_district_code))
+
+if (nrow(cluster_tmp2 > 0)) {
+  
+  admin_dist <- admin_unit |>
+    select(-starts_with("commune")) |>
+    distinct()
+  
+  cluster_tmp2 <- cluster_tmp2 |>
+    rename(district_code = cluster_admin_district_code) |>
+    select(-starts_with("cluster_admin_province"), -starts_with("cluster_admin_district")) |>
+    left_join(admin_dist, by = join_by(district_code))
+  
+  
+  ## test duplicate district
+  admin_dist |> summarize(count = n(), .by = district_name) |> filter(count > 1)
+  
+}
+
+cluster_tmp3 <- cluster_tmp |>
+  filter(is.na(cluster_admin_commune_code), is.na(cluster_admin_district_code)) |>
+  mutate(commune_code = case_when(
+    cluster_admin_district_name %in% c("Kao Nheak", "Kaoh Nheak") & cluster_admin_commune_name %in% c("Royor", "Roya", "Rovek") ~ "110203",
+    cluster_admin_district_name == "Koh Nhek" & cluster_admin_commune_name == "A Buon Leu"    ~ "110202",
+    cluster_admin_district_name == "Koh Nhek" & cluster_admin_commune_name == "Norng Khi Lek" ~ "110201",
+    cluster_admin_district_name == "Koh Nhek" & cluster_admin_commune_name == "R 4 Leu"       ~ "110202",
+    cluster_admin_district_name == "Koh Nhek" & cluster_admin_commune_name == "Sokh Sant"     ~ "110204",
+    cluster_admin_district_name == "Koh Nhek" & cluster_admin_commune_name == "Sre Huy"       ~ "110205",
+    
+    cluster_admin_district_name == "Koun Mom" & cluster_admin_commune_name == "Serey Mungkul" ~ "160401",
+    cluster_admin_district_name == "Koun Mom" & cluster_admin_commune_name == "Srae Angrorng" ~ "160402",
+    cluster_admin_district_name == "Koun Mom" & cluster_admin_commune_name == "Sre Angrorng"  ~ "160402",
+    
+    cluster_admin_district_name == "Lomphat" & cluster_admin_commune_name == "Chey Oudom"    ~ "160501",
+    cluster_admin_district_name == "Lomphat" & cluster_admin_commune_name == "Serey Mungkul" ~ "160401",
+    
+    cluster_admin_district_name == "Pech Chreada" & cluster_admin_commune_name == "Krong Tes" ~ "110401",
+    cluster_admin_district_name == "Pech Chreada" & cluster_admin_commune_name == "Pu Chrey"  ~ "110402",
+  
+    TRUE ~ NA_character_
+  )) 
+
+
+cluster_tmp3a <- cluster_tmp3 |>
+  filter(!is.na(commune_code)) |>
+  select(-starts_with("cluster_admin")) |>
+  left_join(admin_unit, by = join_by(commune_code))
+
+cluster_tmp3b <- cluster_tmp3 |>
+  filter(is.na(commune_code))
+
+cluster_tmp3b |> 
+  select(cluster_cluster_no, starts_with("cluster_admin"),  cluster_access_starting_point_utmx, cluster_access_starting_point_utmy) |>
+  write_csv("tmp/check_admin.csv")
+
+
+
 
 ## !!! ADMIN NAMES NOT MATCHING CODES !!!
 
 ## Checks
-table(cluster_tmp$cluster_admin_province_name)
-table(cluster_tmp$cluster_admin_district_name)
-table(cluster_tmp$cluster_admin_commune_name)
-
-table(cluster_tmp$cluster_organization_team_leader)
+table(cluster_tmp$cluster_admin_province_name, useNA = "ifany")
+table(cluster_tmp$cluster_admin_district_name, useNA = "ifany")
+table(cluster_tmp$cluster_admin_commune_name, useNA = "ifany")
+table(cluster_tmp$cluster_admin_commune_name, useNA = "ifany")
+table(cluster_tmp$cluster_admin_commune_code, useNA = "ifany")
 
 cluster_tmp |> select(cluster_admin_district_code, cluster_admin_district_name) |>
   arrange(cluster_admin_district_code) |>
   distinct()
 
-## Correct
-cluster_tmp3 <- cluster_tmp2 |>
-  mutate(
-    across(c(
-      cluster_organization_team_leader, cluster_organization_TL_assistant
-    ), str_to_title)
-  )
-
-## Checks
-table(cluster_tmp3$cluster_organization_team_leader)
-
 
 ## Assign table to cluster and remove tmp objects
-cluster <- cluster_tmp3
+cluster <- cluster_tmp
 
 rm(cluster_tmp1, cluster_tmp2, cluster_tmp3)
+
+## Tests
+table(cluster$cluster_admin_province_code, useNA = "ifany")
+table(cluster$cluster_admin_province_name, useNA = "ifany")
+table(cluster$cluster_admin_province_code, cluster$cluster_admin_province_name, useNA = "ifany")
+
 
 # 
 # ######
